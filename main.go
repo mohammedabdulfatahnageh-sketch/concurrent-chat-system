@@ -68,12 +68,16 @@ func (s *Server) Run() {
 			switch event.Type {
 			case EventJoin:
 				s.handleJoin(event)
+
 			case EventMessage:
 				s.handleMessage(event)
+
 			case EventLeave:
 				s.handleLeave(event)
+
 			case EventList:
 				s.handleList(event)
+
 			case EventShutdown:
 				s.shutdown()
 				return
@@ -124,7 +128,11 @@ func (s *Server) handleMessage(event Event) {
 		return
 	}
 
-	message := fmt.Sprintf("%s: %s", event.Username, event.Message)
+	message := fmt.Sprintf(
+		"%s: %s",
+		event.Username,
+		event.Message,
+	)
 
 	s.broadcastExcept(event.Username, message)
 
@@ -173,10 +181,14 @@ func (s *Server) handleList(event Event) {
 		return
 	}
 
-	event.Reply <- "Connected users: " + strings.Join(users, ", ")
+	event.Reply <- "Connected users: " +
+		strings.Join(users, ", ")
 }
 
-func (s *Server) broadcastExcept(except string, message string) {
+func (s *Server) broadcastExcept(
+	except string,
+	message string,
+) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -234,10 +246,15 @@ func main() {
 	go server.Run()
 
 	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(
+		signalChan,
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
 
 	go func() {
 		<-signalChan
+
 		server.events <- Event{
 			Type: EventShutdown,
 		}
@@ -287,7 +304,10 @@ func main() {
 			result := <-reply
 
 			if result == "OK" {
-				fmt.Printf("User %s joined successfully.\n", username)
+				fmt.Printf(
+					"User %s joined successfully.\n",
+					username,
+				)
 			} else {
 				fmt.Println(result)
 			}
@@ -325,9 +345,15 @@ func main() {
 
 			found := false
 
-			userList := strings.TrimPrefix(users, "Connected users: ")
+			userList := strings.TrimPrefix(
+				users,
+				"Connected users: ",
+			)
 
-			for _, user := range strings.Split(userList, ", ") {
+			for _, user := range strings.Split(
+				userList,
+				", ",
+			) {
 				if user == username {
 					found = true
 					break
@@ -335,16 +361,25 @@ func main() {
 			}
 
 			if !found {
-				fmt.Printf("ERROR: User %s does not exist.\n", username)
+				fmt.Printf(
+					"ERROR: User %s does not exist.\n",
+					username,
+				)
 				continue
 			}
 
 			selectedUser = username
-			fmt.Printf("Now acting as %s.\n", username)
+
+			fmt.Printf(
+				"Now acting as %s.\n",
+				username,
+			)
 
 		case "send":
 			if selectedUser == "" {
-				fmt.Println("ERROR: Select a user first using: use <username>")
+				fmt.Println(
+					"ERROR: Select a user first using: use <username>",
+				)
 				continue
 			}
 
@@ -390,7 +425,10 @@ func main() {
 			result := <-reply
 
 			if result == "OK" {
-				fmt.Printf("User %s removed.\n", username)
+				fmt.Printf(
+					"User %s removed.\n",
+					username,
+				)
 
 				if selectedUser == username {
 					selectedUser = ""
@@ -411,7 +449,9 @@ func main() {
 			return
 
 		default:
-			fmt.Println("Unknown command. Type 'help' for available commands.")
+			fmt.Println(
+				"Unknown command. Type 'help' for available commands.",
+			)
 		}
 	}
 }
